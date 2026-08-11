@@ -5,5 +5,9 @@
   "display": "standalone",
   "background_color": "#f4f5ee",
   "theme_color": "#133b33",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ],
   "description": "先开口，再知道该练什么的英语口语教练。"
 }
