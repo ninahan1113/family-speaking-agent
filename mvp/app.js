@@ -23,7 +23,8 @@ function render(){
   show(state.started?"app":"welcome");
 }
 function speak(text){if(!voiceReplies||!("speechSynthesis" in window))return;window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang="en-US";utterance.rate=.9;window.speechSynthesis.speak(utterance);}
-function bubble(type,text,label){$("#chat").insertAdjacentHTML("beforeend",`<div class="bubble ${type}"><label>${label}</label>${esc(text)}</div>`);$("#chat").scrollTop=$("#chat").scrollHeight;if(type==="coach")speak(text);}
+function bubble(type,text,label,options={}){$("#chat").insertAdjacentHTML("beforeend",`<div class="bubble ${type}"><label>${label}</label>${esc(text)}</div>`);$("#chat").scrollTop=$("#chat").scrollHeight;if(type==="coach"&&!options.remote)speak(text);}
+function playAudio(base64){if(!base64||!voiceReplies)return;const audio=new Audio(`data:audio/mpeg;base64,${base64}`);audio.play().catch(()=>{});}
 function begin(kind="diagnosis",material=null,purpose=null){
   session={kind,turn:0,material,purpose,userReplies:[]};show("session");$("#chat").innerHTML="";
   const isMaterial=!!material;$("#session-label").textContent=isMaterial?"素材训练":"第一次对话";$("#session-kicker").textContent=isMaterial?"围绕你的材料练习":"先随便说说";
@@ -39,6 +40,30 @@ function finish(){
   state.started=true;state.sessions++;state.observations=observations;state.focus=focus;save();$("#observation").innerHTML=observations.map((x,i)=>`<article class="obs"><b>${i+1}</b><div><strong>${i===0?"你已经做到了":i===1?"下一步最值得练":"暂时不必分心"}</strong><p>${esc(x)}</p></div></article>`).join("");$("#tomorrow-title").textContent=focus.title;$("#tomorrow-text").textContent=focus.text;show("summary");
 }
 function useHelp(kind){const tips={frame:"你可以从这里开始：I’d like to say that… / I think… because…",idea:"没关系，先用中文说你的意思。AI 会帮你拆成一句你现在能说的英文。",example:"例如：I’d suggest we review the plan, because the timeline is too tight."};bubble("coach",tips[kind],"AI 教练");}
+function voiceContext(){return {kind:session.kind, purpose:session.purpose, material:session.material, turn:session.turn, replies:session.userReplies.slice(-3)};}
+async function handleVoiceBlob(blob){
+  const note=$("#voice-note");
+  if(window.verveCloud?.configured){
+    note.textContent="正在转写并生成语音回应…";$("#mic").disabled=true;
+    try{
+      const result=await window.verveCloud.voiceTurn(blob,voiceContext());
+      const transcript=(result?.transcript||"").trim();
+      const coachText=(result?.coach_text||"").trim();
+      if(!transcript||!coachText)throw new Error("empty response");
+      session.userReplies.push(transcript);session.turn++;
+      bubble("user",transcript,"你");
+      bubble("coach",coachText,"AI 教练",{remote:true});playAudio(result.audio_base64);
+      if(result.feedback){bubble("coach",`小提示：${result.feedback}`,"发音与表达",{remote:true});}
+      $("#turn-count").textContent=`${session.turn} / 3`;$("#progress-bar").style.width=`${Math.min(100,session.turn*33)}%`;
+      if(session.turn>=3){setTimeout(finish,500);}
+      else{$("#session-title").textContent="继续把重点说清楚。";$("#session-detail").textContent="可以用中文回答，AI 会先帮你变成自然、听得懂的英文。";}
+      note.textContent="AI 会用英语语音回应；你也可以继续点击录音。";
+    }catch(error){console.warn(error);note.textContent="云端语音暂时不可用，已切换到本地输入。请检查配置或直接输入文字。";}
+    finally{$("#mic").disabled=false;}
+    return;
+  }
+  note.textContent="当前是本地演示模式：浏览器会尝试转写，配置 Supabase 后可获得 AI 语音回应。";
+}
 $("#welcome-start").onclick=()=>begin();
 document.addEventListener("click",e=>{const choice=e.target.closest("[data-goal]");if(choice){state.goal=choice.dataset.goal;document.querySelectorAll("[data-goal]").forEach(x=>x.classList.toggle("selected",x===choice));$("#welcome-start").classList.remove("disabled");}});
 $("#start-today").onclick=()=>begin();$("#summary-home").onclick=()=>{render();};$("#leave-session").onclick=()=>{state.started=true;save();render();};$("#send").onclick=reply;$("#answer").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();reply();}};document.querySelectorAll("[data-help]").forEach(x=>x.onclick=()=>useHelp(x.dataset.help));
@@ -47,8 +72,21 @@ $("#material-form").onsubmit=e=>{e.preventDefault();const f=new FormData(e.curre
 $("#scenario-form").onsubmit=e=>{e.preventDefault();const f=new FormData(e.currentTarget),material=f.get("scenario").trim();$("#scenario-modal").close();begin("material",material,"meeting");};
 $("#reset").onclick=()=>{if(confirm("重置当前浏览器中的体验数据？")){state=structuredClone(defaultState);save();render();}};
 $("#voice-toggle").onclick=()=>{voiceReplies=!voiceReplies;$("#voice-toggle").classList.toggle("muted",!voiceReplies);$("#voice-toggle").setAttribute("aria-pressed",String(voiceReplies));$("#voice-toggle").textContent=voiceReplies?"🔊":"🔇";if(!voiceReplies&&"speechSynthesis" in window)window.speechSynthesis.cancel();};
-const Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(Rec){const rec=new Rec();rec.lang="en-US";rec.interimResults=false;rec.onstart=()=>{$("#mic").classList.add("listening");$("#speak-label").textContent="正在听，请说…";$("#voice-note").textContent="说完后会自动转写并发送。";};rec.onend=()=>{$("#mic").classList.remove("listening");$("#speak-label").textContent="点击，说英语";$("#voice-note").textContent="AI 会用英语语音回应；说完后会自动转写并发送。";};rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};rec.onerror=()=>{$("#voice-note").textContent="没有收到语音；请检查麦克风权限，或直接输入。";};$("#mic").onclick=()=>rec.start();}else{$("#mic").disabled=true;$("#speak-label").textContent="此浏览器暂不支持语音输入";$("#voice-note").textContent="请使用支持语音输入的浏览器，或暂时用文字输入。";}
+let recorder=null;let recordingStream=null;let recordingChunks=[];
+async function startRecording(){
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
+    const Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(Rec){const rec=new Rec();rec.lang="en-US";rec.interimResults=false;rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};rec.onerror=()=>{$("#voice-note").textContent="没有收到语音；请检查麦克风权限，或直接输入。";};rec.start();return;}
+    $("#voice-note").textContent="此浏览器不支持录音，请直接输入文字。";return;
+  }
+  recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  recordingChunks=[];recorder=new MediaRecorder(recordingStream,{mimeType:"audio/webm"});
+  recorder.ondataavailable=e=>{if(e.data.size)recordingChunks.push(e.data);};
+  recorder.onstop=()=>{const blob=new Blob(recordingChunks,{type:"audio/webm"});recordingStream?.getTracks().forEach(t=>t.stop());handleVoiceBlob(blob);};
+  recorder.start();$("#mic").classList.add("listening");$("#speak-label").textContent="点击结束录音";$("#voice-note").textContent="正在录音…说完后再点击一次。";
+}
+function stopRecording(){if(recorder&&recorder.state!=="inactive"){recorder.stop();recorder=null;$("#mic").classList.remove("listening");$("#speak-label").textContent="点击，说英语";}}
+$("#mic").onclick=()=>recorder?stopRecording():startRecording().catch(()=>{$("#voice-note").textContent="麦克风权限未开启，请允许访问或直接输入文字。";});
 render();
 
 if ("serviceWorker" in navigator) {

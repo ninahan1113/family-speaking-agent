@@ -13,13 +13,31 @@ try {
 }
 
 window.verveCloud = {
+  get configured() {
+    return Boolean(client);
+  },
+  async ensureAnonymousUser() {
+    if (!client) return null;
+    if (anonymousUser) return anonymousUser;
+    const { data, error } = await client.auth.signInAnonymously();
+    if (error) throw error;
+    anonymousUser = data?.user || null;
+    return anonymousUser;
+  },
+  async voiceTurn(blob, context = {}) {
+    if (!client) return null;
+    await this.ensureAnonymousUser();
+    const form = new FormData();
+    form.append("audio", blob, blob.name || "voice.webm");
+    form.append("context", JSON.stringify(context));
+    const { data, error } = await client.functions.invoke("voice-turn", { body: form });
+    if (error) throw error;
+    return data;
+  },
   async saveState(state) {
     if (!client) return;
     try {
-      if (!anonymousUser) {
-        const { data } = await client.auth.signInAnonymously();
-        anonymousUser = data?.user;
-      }
+      await this.ensureAnonymousUser();
       if (!anonymousUser) return;
       await client.from("practice_sessions").upsert({
         user_id: anonymousUser.id,
