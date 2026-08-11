@@ -12,6 +12,7 @@
     <link rel="apple-touch-icon" href="icon-180.png" />
     <title>Verve · 先开口，再知道该练什么</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="composer.css" />
     <style>
       .brand{display:inline-flex;align-items:center;gap:8px}
       .brand strong{font-weight:850}
@@ -45,7 +46,7 @@
       <section class="screen session hidden" id="session">
         <div class="session-head"><button class="back" id="leave-session">← 保存，稍后继续</button><span id="session-label">第一次对话</span><strong id="turn-count">0 / 3</strong></div>
         <div class="session-progress"><i id="progress-bar"></i></div>
-        <div class="session-layout"><section><p class="kicker" id="session-kicker">先随便说说</p><h1 id="session-title">说说你最近在做的一件事。</h1><p class="prompt-detail" id="session-detail">可以是工作、学习，或者今天发生的小事。用你会的英语即可。</p><div class="help-strip"><button data-help="frame">给我一个句框</button><button data-help="idea">我想先用中文说</button><button data-help="example">给我一个例子</button></div></section><section class="chat-wrap"><div class="chat" id="chat"></div><div class="voice-composer"><button class="speak-button" id="mic" type="button"><span class="wave">⌁</span><span id="speak-label">点击，说英语</span></button><button class="voice-toggle" id="voice-toggle" type="button" aria-pressed="true" title="切换 AI 语音回复">🔊</button></div><div class="text-fallback"><textarea id="answer" placeholder="如果不方便说，也可以输入…" rows="1"></textarea><button class="send" id="send">发送</button></div><small id="voice-note">AI 会用英语语音回应；说完后会自动转写并发送。</small></section></div>
+        <div class="session-layout"><section><p class="kicker" id="session-kicker">先随便说说</p><h1 id="session-title">说说你最近在做的一件事。</h1><p class="prompt-detail" id="session-detail">可以是工作、学习，或者今天发生的小事。用你会的英语即可。</p><div class="help-strip"><button data-help="frame">给我一个句框</button><button data-help="idea">我想先用中文说</button><button data-help="example">给我一个例子</button></div></section><section class="chat-wrap"><div class="chat" id="chat"></div><div class="voice-composer"><button class="speak-button" id="mic" type="button"><span class="wave">⌁</span><span id="speak-label">点击，说话</span></button><button class="keyboard-toggle" id="keyboard-toggle" type="button" aria-pressed="false" title="切换键盘输入" aria-label="切换键盘输入">⌨</button><div class="text-fallback"><textarea id="answer" placeholder="输入消息…" rows="1"></textarea><button class="send" id="send" aria-label="发送">↑</button></div></div><small id="voice-note">可以说中文或英文；AI 会理解你的意思并用英语回应。</small></section></div>
       </section>
 
       <section class="screen summary hidden" id="summary"><p class="kicker">你的第一份观察</p><h1>现在不必知道自己的等级。</h1><p class="lede">我们已经可以确定，明天从哪里开始会最有效。</p><div class="observation" id="observation"></div><div class="tomorrow"><p class="kicker">明天的 8 分钟任务</p><h2 id="tomorrow-title"></h2><p id="tomorrow-text"></p><button class="start" id="summary-home">保存计划 <span>→</span></button></div></section>

@@ -71,12 +71,12 @@ $("#open-material").onclick=()=>$("#material-modal").showModal();$("#open-scenar
 $("#material-form").onsubmit=e=>{e.preventDefault();const f=new FormData(e.currentTarget),material=f.get("material").trim();state.material=material;save();$("#material-modal").close();begin("material",material,f.get("purpose"));};
 $("#scenario-form").onsubmit=e=>{e.preventDefault();const f=new FormData(e.currentTarget),material=f.get("scenario").trim();$("#scenario-modal").close();begin("material",material,"meeting");};
 $("#reset").onclick=()=>{if(confirm("重置当前浏览器中的体验数据？")){state=structuredClone(defaultState);save();render();}};
-$("#voice-toggle").onclick=()=>{voiceReplies=!voiceReplies;$("#voice-toggle").classList.toggle("muted",!voiceReplies);$("#voice-toggle").setAttribute("aria-pressed",String(voiceReplies));$("#voice-toggle").textContent=voiceReplies?"🔊":"🔇";if(!voiceReplies&&"speechSynthesis" in window)window.speechSynthesis.cancel();};
+$("#keyboard-toggle").onclick=()=>{const composer=$(".voice-composer"),open=!composer.classList.contains("keyboard-open");composer.classList.toggle("keyboard-open",open);$("#keyboard-toggle").setAttribute("aria-pressed",String(open));if(open)$("#answer").focus();};
 let recorder=null;let recordingStream=null;let recordingChunks=[];
 async function startRecording(){
   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
     const Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(Rec){const rec=new Rec();rec.lang="en-US";rec.interimResults=false;rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};rec.onerror=()=>{$("#voice-note").textContent="没有收到语音；请检查麦克风权限，或直接输入。";};rec.start();return;}
+    if(Rec){const rec=new Rec();rec.lang=navigator.language?.toLowerCase().startsWith("zh")?"zh-CN":"en-US";rec.interimResults=false;rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};rec.onerror=()=>{$("#voice-note").textContent="没有收到语音；请检查麦克风权限，或直接输入。";};rec.start();return;}
     $("#voice-note").textContent="此浏览器不支持录音，请直接输入文字。";return;
   }
   recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});
@@ -85,7 +85,7 @@ async function startRecording(){
   recorder.onstop=()=>{const blob=new Blob(recordingChunks,{type:"audio/webm"});recordingStream?.getTracks().forEach(t=>t.stop());handleVoiceBlob(blob);};
   recorder.start();$("#mic").classList.add("listening");$("#speak-label").textContent="点击结束录音";$("#voice-note").textContent="正在录音…说完后再点击一次。";
 }
-function stopRecording(){if(recorder&&recorder.state!=="inactive"){recorder.stop();recorder=null;$("#mic").classList.remove("listening");$("#speak-label").textContent="点击，说英语";}}
+function stopRecording(){if(recorder&&recorder.state!=="inactive"){recorder.stop();recorder=null;$("#mic").classList.remove("listening");$("#speak-label").textContent="点击，说话";}}
 $("#mic").onclick=()=>recorder?stopRecording():startRecording().catch(()=>{$("#voice-note").textContent="麦克风权限未开启，请允许访问或直接输入文字。";});
 render();
 

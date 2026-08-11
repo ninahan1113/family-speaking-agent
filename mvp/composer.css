@@ -1,0 +1,12 @@
+/* Chat-style composer: voice, keyboard toggle and text send stay on one line. */
+.voice-composer{align-items:center;gap:8px}
+.speak-button{min-width:0}
+.keyboard-toggle{width:48px;height:56px;flex:0 0 48px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--muted);font-size:21px;cursor:pointer}
+.keyboard-toggle[aria-pressed="true"]{border-color:var(--brand);color:var(--brand);background:#12351f}
+.voice-composer .text-fallback{display:none;padding:0;gap:6px;flex:1;background:transparent}
+.voice-composer.keyboard-open .speak-button{display:none}
+.voice-composer.keyboard-open .text-fallback{display:flex}
+.voice-composer.keyboard-open .keyboard-toggle{order:-1}
+.voice-composer .text-fallback textarea{min-height:56px;height:56px;padding:14px 11px}
+.voice-composer .send{width:48px;padding:0;font-size:24px;line-height:1}
+.chat-wrap>small{display:block;text-align:center}
