@@ -1,0 +1,9 @@
+{
+  "name": "Verve 家庭口语教练",
+  "short_name": "Verve",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f5ee",
+  "theme_color": "#133b33",
+  "description": "先开口，再知道该练什么的英语口语教练。"
+}

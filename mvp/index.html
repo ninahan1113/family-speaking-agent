@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#133b33" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Verve" />
+    <link rel="manifest" href="manifest.json" />
+    <title>Verve · 先开口，再知道该练什么</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar"><a class="brand" href="#home"><i>v</i>verve</a><span class="demo-pill"><b></b>本地体验模式</span><button class="quiet" id="reset" title="重置体验">重新开始</button></header>
+
+      <section class="screen welcome" id="welcome">
+        <p class="kicker">英语口语教练</p>
+        <h1>先开口。<br />再知道该练什么。</h1>
+        <p class="lede">不选等级，不找课程。用一次真实表达，帮你找到下一步。</p>
+        <div class="question-card"><p>你现在更想先解决什么？</p><div class="choice-row"><button data-goal="daily">日常敢开口</button><button data-goal="work">工作交流</button><button data-goal="both">两者都有</button></div><button class="start disabled" id="welcome-start">开始今天的 8 分钟练习 <span>→</span></button><small>你可以说中文、英语，或打字；这里没有考试。</small></div>
+      </section>
+
+      <section class="screen app hidden" id="app">
+        <div class="home-head"><div><p class="kicker" id="date">今天</p><h1 id="greeting">你好。</h1><p id="subheading">我们从一次小表达开始。</p></div><div class="profile-dot"><strong id="profile-grade">·</strong><span>渐进画像</span></div></div>
+
+        <article class="today-card" id="today-card"><div class="today-copy"><p class="kicker">今天，只练这一件事</p><h2 id="task-title">让对方听懂你的重点</h2><p id="task-text">用 3 句话介绍你最近在做的一件事。卡住时可以随时请求提示。</p><div class="chips"><span>8 分钟</span><span id="task-tag">自由表达</span></div></div><button class="start" id="start-today">开始练习 <span>→</span></button></article>
+
+        <div class="entry-grid"><button class="entry-card" id="open-material"><span class="entry-icon">⌁</span><strong>我有一份材料要练</strong><p>粘贴文章、句型或会议要点，把它变成今天的口语任务。</p><em>带入素材 →</em></button><button class="entry-card" id="open-scenario"><span class="entry-icon">◇</span><strong>我想准备一次真实沟通</strong><p>例如明天的会议、客户电话或一次英文汇报。</p><em>创建任务 →</em></button></div>
+
+        <section class="insight" id="insight"><div><p class="kicker">你的教练正在记住</p><h2>先看事实，再决定训练。</h2><p>同一个问题在不同对话里重复出现，才会成为长期训练项。</p></div><div class="signal-list" id="signal-list"><span>完成第一次对话后，这里会出现你的观察。</span></div></section>
+      </section>
+
+      <section class="screen session hidden" id="session">
+        <div class="session-head"><button class="back" id="leave-session">← 保存，稍后继续</button><span id="session-label">第一次对话</span><strong id="turn-count">0 / 3</strong></div>
+        <div class="session-progress"><i id="progress-bar"></i></div>
+        <div class="session-layout"><section><p class="kicker" id="session-kicker">先随便说说</p><h1 id="session-title">说说你最近在做的一件事。</h1><p class="prompt-detail" id="session-detail">可以是工作、学习，或者今天发生的小事。用你会的英语即可。</p><div class="help-strip"><button data-help="frame">给我一个句框</button><button data-help="idea">我想先用中文说</button><button data-help="example">给我一个例子</button></div></section><section class="chat-wrap"><div class="chat" id="chat"></div><div class="voice-composer"><button class="speak-button" id="mic" type="button"><span class="wave">⌁</span><span id="speak-label">点击，说英语</span></button><button class="voice-toggle" id="voice-toggle" type="button" aria-pressed="true" title="切换 AI 语音回复">🔊</button></div><div class="text-fallback"><textarea id="answer" placeholder="如果不方便说，也可以输入…" rows="1"></textarea><button class="send" id="send">发送</button></div><small id="voice-note">AI 会用英语语音回应；说完后会自动转写并发送。</small></section></div>
+      </section>
+
+      <section class="screen summary hidden" id="summary"><p class="kicker">你的第一份观察</p><h1>现在不必知道自己的等级。</h1><p class="lede">我们已经可以确定，明天从哪里开始会最有效。</p><div class="observation" id="observation"></div><div class="tomorrow"><p class="kicker">明天的 8 分钟任务</p><h2 id="tomorrow-title"></h2><p id="tomorrow-text"></p><button class="start" id="summary-home">保存计划 <span>→</span></button></div></section>
+    </main>
+
+    <dialog id="material-modal"><form method="dialog" id="material-form"><button class="close" value="cancel">×</button><p class="kicker">把你的内容变成开口任务</p><h2>今天要练什么材料？</h2><p>先粘贴一小段英文、一个新句型，或一份脱敏的会议要点。</p><textarea name="material" required placeholder="例如：I’d suggest we review the timeline before Friday, because…"></textarea><label>这次希望达到什么？<select name="purpose"><option value="use">理解并会用其中的表达</option><option value="meeting">为一次会议或汇报准备</option><option value="pronunciation">朗读并练清楚关键句</option></select></label><button class="start" value="default">生成我的训练任务 <span>→</span></button><small>正式版会提供材料保存和删除控制；体验版只保存在当前浏览器。</small></form></dialog>
+
+    <dialog id="scenario-modal"><form method="dialog" id="scenario-form"><button class="close" value="cancel">×</button><p class="kicker">准备一次真实沟通</p><h2>你希望下一次说清什么？</h2><textarea name="scenario" required placeholder="例如：明天与海外同事同步项目延期，并确认新的交付时间。"></textarea><button class="start" value="default">生成我的训练任务 <span>→</span></button></form></dialog>
+    <script type="module" src="supabase-bridge.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
