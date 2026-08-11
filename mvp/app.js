@@ -74,8 +74,18 @@ $("#reset").onclick=()=>{if(confirm("重置当前浏览器中的体验数据？"
 $("#keyboard-toggle").onclick=()=>{const composer=$(".voice-composer"),open=!composer.classList.contains("keyboard-open");composer.classList.toggle("keyboard-open",open);$("#keyboard-toggle").setAttribute("aria-pressed",String(open));if(open)$("#answer").focus();};
 let recorder=null;let recordingStream=null;let recordingChunks=[];
 async function startRecording(){
+  const Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+  // Until Supabase is configured, use the browser recognizer so a local demo
+  // still produces a message instead of recording an audio blob with nowhere to send it.
+  if(!window.verveCloud?.configured&&Rec){
+    const rec=new Rec();rec.lang=navigator.language?.toLowerCase().startsWith("zh")?"zh-CN":"en-US";rec.interimResults=false;rec.continuous=false;
+    rec.onstart=()=>{$("#mic").classList.add("listening");$("#speak-label").textContent="正在听…";$("#voice-note").textContent="可以说中文或英文，说完会自动发送。";};
+    rec.onend=()=>{$("#mic").classList.remove("listening");$("#speak-label").textContent="点击，说话";};
+    rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};
+    rec.onerror=()=>{$("#voice-note").textContent="没有收到语音；请检查麦克风权限，或直接输入。";};
+    rec.start();return;
+  }
   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
-    const Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(Rec){const rec=new Rec();rec.lang=navigator.language?.toLowerCase().startsWith("zh")?"zh-CN":"en-US";rec.interimResults=false;rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};rec.onerror=()=>{$("#voice-note").textContent="没有收到语音；请检查麦克风权限，或直接输入。";};rec.start();return;}
     $("#voice-note").textContent="此浏览器不支持录音，请直接输入文字。";return;
   }
