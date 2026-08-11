@@ -1,4 +1,4 @@
-const CACHE = "verve-mobile-pilot-v2";
+const CACHE = "verve-mobile-pilot-v3";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
