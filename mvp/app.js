@@ -31,8 +31,23 @@ function begin(kind="diagnosis",material=null,purpose=null){
   const current=isMaterial?{title:"先用自己的话说说这段内容。",detail:"不用逐字复述。先说你理解到的一个重点，AI 会帮助你把它说得更清楚。",ask:`I’ve read the material. In your own words, what is the main idea you want to use?`} : prompts[0];
   $("#session-title").textContent=current.title;$("#session-detail").textContent=current.detail;$("#turn-count").textContent="0 / 3";$("#progress-bar").style.width="3%";bubble("coach",current.ask,"AI 教练");$("#answer").focus();
 }
+function localCoachResponse(text){
+  const lower=text.toLowerCase();
+  const chinese=/[\u4e00-\u9fff]/.test(text);
+  const topic=/(客户|客户|client|customer|meeting|会议|工作|project|项目|老板|同事)/i.test(text)?"work":/(孩子|家庭|家|孩子|family|son|daughter|wife|husband)/i.test(text)?"family":/(学习|英语|课程|learn|study|practice|english)/i.test(text)?"learning":/(明天|计划|下周|打算|tomorrow|plan|next week|goal)/i.test(text)?"plan":"general";
+  const topicData={
+    work:{question:"What is the most important result you want from this work?",tip:"工作场景可以用：The main point is… / I’d suggest… because…"},
+    family:{question:"How did this affect your family, and what would you like to do next?",tip:"家庭话题先说人物和动作：My son/wife… and then…"},
+    learning:{question:"What part feels difficult, and what will you try next?",tip:"学习话题可以用：I’m trying to… but…"},
+    plan:{question:"What is the first small step, and when will you do it?",tip:"计划表达可以用：I’m planning to… by…"},
+    general:{question:"What happened next, and how did you feel about it?",tip:"先说事实，再补原因：It happened because…"}
+  }[topic];
+  const words=lower.split(/[^a-z]+/).filter(w=>w.length>3&&!/^(that|this|with|have|what|when|about|from|they|were|will)$/.test(w));
+  const hook=chinese?"I understood your idea. Let’s turn it into simple English.":words.length?`I heard you mention “${words.slice(0,3).join(", ")}.”`:"Thanks for sharing that.";
+  return {text:`${hook} ${topicData.question}`,tip:topicData.tip,topic};
+}
 function reply(){const input=$("#answer"), text=input.value.trim();if(!text)return;input.value="";session.userReplies.push(text);session.turn++;bubble("user",text,"你");$("#turn-count").textContent=`${session.turn} / 3`;$("#progress-bar").style.width=`${Math.min(100,session.turn*33)}%`;
-  setTimeout(()=>{if(session.turn>=3){bubble("coach","Nice work. I have enough evidence to suggest one clear next step.","AI 教练");setTimeout(finish,450);return;}const next=session.kind==="diagnosis"?prompts[session.turn]:{title:"把它用在一个真实情境里。",detail:"试着用目标表达说明你的观点、原因或下一步。",ask:"Good. Now imagine someone asks you a follow-up question. How would you explain it more clearly?"};$("#session-title").textContent=next.title;$("#session-detail").textContent=next.detail;bubble("coach",next.ask,"AI 教练");},260);
+  setTimeout(()=>{if(session.turn>=3){const last=localCoachResponse(text);bubble("coach",`You made your point clear. ${last.tip}`,"AI 教练");setTimeout(finish,450);return;}const next=session.kind==="diagnosis"?prompts[session.turn]:{title:"围绕你的话题继续展开。",detail:"AI 已抓到你刚才的重点。可以继续用中文或英文补充。",ask:localCoachResponse(text).text};$("#session-title").textContent=next.title;$("#session-detail").textContent=next.detail;bubble("coach",next.ask,"AI 教练");},260);
 }
 function finish(){
   const all=session.userReplies.join(" ").toLowerCase();const isBasic=/\b(i|my|work|like|want)\b/.test(all);const focus=session.kind==="material"?{title:"把材料里的一个表达用在自己的句子中",text:"明天换一个相近话题，再用一次目标表达，而不是重复原文。",tag:"素材迁移"}:{title:isBasic?"把一句话说完整，再补一个原因":"先提出建议，再说明原因",text:isBasic?"明天练习：用一个完整句子说重点，再加 because 说明原因。":"明天练习：用 I’d suggest… because… 说出建议和理由。",tag:"渐进训练"};
