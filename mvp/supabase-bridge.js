@@ -2,7 +2,7 @@ let client = null;
 let anonymousUser = null;
 
 try {
-  const config = window.VERVE_SUPABASE_CONFIG || (await import("./supabase-config.js")).default;
+  const config = window.VERVE_SUPABASE_CONFIG;
   if (config?.url && config?.anonKey && !config.url.includes("YOUR_PROJECT_REF")) {
     client = { url: config.url.replace(/\/$/, ""), anonKey: config.anonKey, accessToken: null };
   }
