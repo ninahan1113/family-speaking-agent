@@ -62,7 +62,8 @@ async function handleVoiceBlob(blob){
     finally{$("#mic").disabled=false;}
     return;
   }
-  note.textContent="当前是本地演示模式：浏览器会尝试转写，配置 Supabase 后可获得 AI 语音回应。";
+  note.textContent="录音已完成，但当前网址还没有连接 AI 转写服务。请先切换⌨输入，或配置 Supabase 后使用语音。";
+  $(".voice-composer").classList.add("keyboard-open");$("#keyboard-toggle").setAttribute("aria-pressed","true");$("#answer").focus();
 }
 $("#welcome-start").onclick=()=>begin();
 document.addEventListener("click",e=>{const choice=e.target.closest("[data-goal]");if(choice){state.goal=choice.dataset.goal;document.querySelectorAll("[data-goal]").forEach(x=>x.classList.toggle("selected",x===choice));$("#welcome-start").classList.remove("disabled");}});
@@ -82,12 +83,12 @@ async function startRecording(){
     rec.onstart=()=>{$("#mic").classList.add("listening");$("#speak-label").textContent="正在听…";$("#voice-note").textContent="可以说中文或英文，说完会自动发送。";};
     rec.onend=()=>{$("#mic").classList.remove("listening");$("#speak-label").textContent="点击，说话";};
     rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};
-    rec.onerror=()=>{$("#voice-note").textContent="没有收到语音；请检查麦克风权限，或直接输入。";};
+    rec.onerror=e=>{$("#voice-note").textContent=e.error==="not-allowed"?"麦克风权限被拒绝，请在浏览器设置中允许访问。":"语音识别没有捕捉到内容，请靠近麦克风再试，或切换⌨输入。";};
     rec.start();return;
   }
   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
-    if(Rec){const rec=new Rec();rec.lang=navigator.language?.toLowerCase().startsWith("zh")?"zh-CN":"en-US";rec.interimResults=false;rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};rec.onerror=()=>{$("#voice-note").textContent="没有收到语音；请检查麦克风权限，或直接输入。";};rec.start();return;}
-    $("#voice-note").textContent="此浏览器不支持录音，请直接输入文字。";return;
+    if(Rec){const rec=new Rec();rec.lang=navigator.language?.toLowerCase().startsWith("zh")?"zh-CN":"en-US";rec.interimResults=false;rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};rec.onerror=e=>{$("#voice-note").textContent=e.error==="not-allowed"?"麦克风权限被拒绝，请在浏览器设置中允许访问。":"语音识别没有捕捉到内容，请切换⌨输入。";};rec.start();return;}
+    $("#voice-note").textContent="此浏览器不支持语音转写，请切换⌨输入；连接云端后可使用录音。";$(".voice-composer").classList.add("keyboard-open");$("#keyboard-toggle").setAttribute("aria-pressed","true");$("#answer").focus();return;
   }
   recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});
   recordingChunks=[];recorder=new MediaRecorder(recordingStream,{mimeType:"audio/webm"});
