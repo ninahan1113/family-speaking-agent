@@ -25,6 +25,7 @@ function render(){
 function speak(text){if(!voiceReplies||!("speechSynthesis" in window))return;window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang="en-US";utterance.rate=.9;window.speechSynthesis.speak(utterance);}
 function bubble(type,text,label,options={}){$("#chat").insertAdjacentHTML("beforeend",`<div class="bubble ${type}"><label>${label}</label>${esc(text)}</div>`);$("#chat").scrollTop=$("#chat").scrollHeight;if(type==="coach"&&!options.remote)speak(text);}
 function playAudio(base64){if(!base64||!voiceReplies)return;const audio=new Audio(`data:audio/mpeg;base64,${base64}`);audio.play().catch(()=>{});}
+function playCoachAudio(base64,text){if(base64){playAudio(base64);return;}speak(text);}
 function begin(kind="diagnosis",material=null,purpose=null){
   session={kind,turn:0,material,purpose,userReplies:[]};show("session");$("#chat").innerHTML="";
   const isMaterial=!!material;$("#session-label").textContent=isMaterial?"素材训练":"第一次对话";$("#session-kicker").textContent=isMaterial?"围绕你的材料练习":"先随便说说";
@@ -71,7 +72,7 @@ async function handleVoiceBlob(blob){
       if(!transcript||!coachText)throw new Error("empty response");
       session.userReplies.push(transcript);session.turn++;
       bubble("user",transcript,"你");
-      bubble("coach",coachText,"AI 教练",{remote:true});playAudio(result.audio_base64);
+      bubble("coach",coachText,"AI 教练",{remote:true});playCoachAudio(result.audio_base64,coachText);
       if(result.feedback){bubble("coach",`小提示：${result.feedback}`,"发音与表达",{remote:true});}
       $("#turn-count").textContent=`${session.turn} / 3`;$("#progress-bar").style.width=`${Math.min(100,session.turn*33)}%`;
       if(session.turn>=3){setTimeout(finish,500);}
