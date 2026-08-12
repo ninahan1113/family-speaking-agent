@@ -37,7 +37,9 @@ window.verveCloud = {
   async textTurn(text, context = {}) {
     if (!client) return null;
     await this.ensureAnonymousUser();
-    const { data, error } = await client.functions.invoke("text-turn", {
+    // The first dashboard deployment updated the existing function named
+    // dynamic-service; keep the client aligned with that live endpoint.
+    const { data, error } = await client.functions.invoke("dynamic-service", {
       body: { text, context },
     });
     if (error) throw error;
