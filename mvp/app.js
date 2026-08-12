@@ -83,11 +83,11 @@ async function startRecording(){
     rec.onstart=()=>{$("#mic").classList.add("listening");$("#speak-label").textContent="正在听…";$("#voice-note").textContent="可以说中文或英文，说完会自动发送。";};
     rec.onend=()=>{$("#mic").classList.remove("listening");$("#speak-label").textContent="点击，说话";};
     rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};
-    rec.onerror=e=>{$("#voice-note").textContent=e.error==="not-allowed"?"麦克风权限被拒绝，请在浏览器设置中允许访问。":"语音识别没有捕捉到内容，请靠近麦克风再试，或切换⌨输入。";};
+    rec.onerror=e=>{const denied=e.error==="not-allowed"||e.error==="service-not-allowed";$("#voice-note").textContent=denied?"麦克风权限被拒绝：请在手机浏览器的网站设置中允许麦克风，然后重新打开页面。已切换⌨输入。":"语音识别没有捕捉到内容，请靠近麦克风再试，或切换⌨输入。";$(".voice-composer").classList.add("keyboard-open");$("#keyboard-toggle").setAttribute("aria-pressed","true");$("#answer").focus();};
     rec.start();return;
   }
   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
-    if(Rec){const rec=new Rec();rec.lang=navigator.language?.toLowerCase().startsWith("zh")?"zh-CN":"en-US";rec.interimResults=false;rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};rec.onerror=e=>{$("#voice-note").textContent=e.error==="not-allowed"?"麦克风权限被拒绝，请在浏览器设置中允许访问。":"语音识别没有捕捉到内容，请切换⌨输入。";};rec.start();return;}
+    if(Rec){const rec=new Rec();rec.lang=navigator.language?.toLowerCase().startsWith("zh")?"zh-CN":"en-US";rec.interimResults=false;rec.onresult=e=>{$("#answer").value=e.results[0][0].transcript;reply();};rec.onerror=e=>{$("#voice-note").textContent=e.error==="not-allowed"?"麦克风权限被拒绝：请在手机浏览器的网站设置中允许麦克风，然后重新打开页面。已切换⌨输入。":"语音识别没有捕捉到内容，请切换⌨输入。";$(".voice-composer").classList.add("keyboard-open");$("#keyboard-toggle").setAttribute("aria-pressed","true");$("#answer").focus();};rec.start();return;}
     $("#voice-note").textContent="此浏览器不支持语音转写，请切换⌨输入；连接云端后可使用录音。";$(".voice-composer").classList.add("keyboard-open");$("#keyboard-toggle").setAttribute("aria-pressed","true");$("#answer").focus();return;
   }
   recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});
