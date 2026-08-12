@@ -1,6 +1,6 @@
-# voice-turn
+# voice-turn / text-turn
 
-This Edge Function keeps the OpenAI key off the phone. It accepts one recorded audio clip, transcribes it, asks the coach model for a short correction and follow-up, then returns an MP3 voice reply.
+These Edge Functions keep the OpenAI key off the phone. `voice-turn` accepts one recorded audio clip, while `text-turn` accepts typed text. Both use the same coach rules and conversation context so voice and keyboard turns behave consistently.
 
 Configure these Supabase Edge Function secrets:
 
@@ -14,6 +14,7 @@ Deploy the function with the Supabase CLI from the project root:
 
 ```bash
 supabase functions deploy voice-turn
+supabase functions deploy text-turn
 supabase secrets set OPENAI_API_KEY=... 
 ```
 

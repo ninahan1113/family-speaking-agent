@@ -46,7 +46,11 @@ function localCoachResponse(text){
   const hook=chinese?"I understood your idea. Let’s turn it into simple English.":words.length?`I heard you mention “${words.slice(0,3).join(", ")}.”`:"Thanks for sharing that.";
   return {text:`${hook} ${topicData.question}`,tip:topicData.tip,topic};
 }
-function reply(){const input=$("#answer"), text=input.value.trim();if(!text)return;input.value="";session.userReplies.push(text);session.turn++;bubble("user",text,"你");$("#turn-count").textContent=`${session.turn} / 3`;$("#progress-bar").style.width=`${Math.min(100,session.turn*33)}%`;
+async function reply(){const input=$("#answer"), text=input.value.trim();if(!text)return;input.value="";session.userReplies.push(text);session.turn++;bubble("user",text,"你");$("#turn-count").textContent=`${session.turn} / 3`;$("#progress-bar").style.width=`${Math.min(100,session.turn*33)}%`;
+  if(window.verveCloud?.configured){
+    $("#voice-note").textContent="AI 正在理解你的意思…";$("#send").disabled=true;$("#keyboard-toggle").disabled=true;
+    try{const result=await window.verveCloud.textTurn(text,voiceContext());bubble("coach",result.coach_text||"Tell me a little more about that.","AI 教练",{remote:true});if(result.suggested_english)bubble("coach",`可以这样说：${result.suggested_english}`,"表达建议",{remote:true});if(result.feedback)bubble("coach",`小提示：${result.feedback}`,"发音与表达",{remote:true});$("#voice-note").textContent="可以继续说中文或英文，AI 会根据上下文回应。";if(session.turn>=3)setTimeout(finish,500);return;}catch(error){console.warn(error);$("#voice-note").textContent="云端暂时不可用，已使用本地对话模式。";}finally{$("#send").disabled=false;$("#keyboard-toggle").disabled=false;}
+  }
   setTimeout(()=>{if(session.turn>=3){const last=localCoachResponse(text);bubble("coach",`You made your point clear. ${last.tip}`,"AI 教练");setTimeout(finish,450);return;}const next=session.kind==="diagnosis"?prompts[session.turn]:{title:"围绕你的话题继续展开。",detail:"AI 已抓到你刚才的重点。可以继续用中文或英文补充。",ask:localCoachResponse(text).text};$("#session-title").textContent=next.title;$("#session-detail").textContent=next.detail;bubble("coach",next.ask,"AI 教练");},260);
 }
 function finish(){

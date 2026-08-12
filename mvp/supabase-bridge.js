@@ -34,6 +34,15 @@ window.verveCloud = {
     if (error) throw error;
     return data;
   },
+  async textTurn(text, context = {}) {
+    if (!client) return null;
+    await this.ensureAnonymousUser();
+    const { data, error } = await client.functions.invoke("text-turn", {
+      body: { text, context },
+    });
+    if (error) throw error;
+    return data;
+  },
   async saveState(state) {
     if (!client) return;
     try {
