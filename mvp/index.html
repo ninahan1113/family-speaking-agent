@@ -56,6 +56,7 @@
     <dialog id="material-modal"><form method="dialog" id="material-form"><button class="close" value="cancel">×</button><p class="kicker">把你的内容变成开口任务</p><h2>今天要练什么材料？</h2><p>先粘贴一小段英文、一个新句型，或一份脱敏的会议要点。</p><textarea name="material" required placeholder="例如：I’d suggest we review the timeline before Friday, because…"></textarea><label>这次希望达到什么？<select name="purpose"><option value="use">理解并会用其中的表达</option><option value="meeting">为一次会议或汇报准备</option><option value="pronunciation">朗读并练清楚关键句</option></select></label><button class="start" value="default">生成我的训练任务 <span>→</span></button><small>正式版会提供材料保存和删除控制；体验版只保存在当前浏览器。</small></form></dialog>
 
     <dialog id="scenario-modal"><form method="dialog" id="scenario-form"><button class="close" value="cancel">×</button><p class="kicker">准备一次真实沟通</p><h2>你希望下一次说清什么？</h2><textarea name="scenario" required placeholder="例如：明天与海外同事同步项目延期，并确认新的交付时间。"></textarea><button class="start" value="default">生成我的训练任务 <span>→</span></button></form></dialog>
+    <script src="supabase-config.js"></script>
     <script type="module" src="supabase-bridge.js"></script>
     <script src="app.js"></script>
   </body>

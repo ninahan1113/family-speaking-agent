@@ -2,8 +2,7 @@ let client = null;
 let anonymousUser = null;
 
 try {
-  const configModule = await import("./supabase-config.js");
-  const config = configModule.default || window.VERVE_SUPABASE_CONFIG;
+  const config = window.VERVE_SUPABASE_CONFIG || (await import("./supabase-config.js")).default;
   if (config?.url && config?.anonKey && !config.url.includes("YOUR_PROJECT_REF")) {
     const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
     client = createClient(config.url, config.anonKey);
